@@ -7,6 +7,16 @@ import re
 import json
 nlp = spacy.load("en_core_web_sm")
 app = FastAPI()
+pii_json={
+    "Name":[],
+    "Name1":[],
+    "Name2":[],
+    "Phone number":[],
+    "DOB":[],
+    "MRN":[],
+    "Gender":[],
+    "Age":[]
+}
 custom_spacy_config = { "gliner_model": "knowledgator/gliner-multitask-large-v0.5",
                             "chunk_size": 250,
                             "labels": ["sex","gender","person","phone_number"],
@@ -107,8 +117,10 @@ async def extract_and_redact(input_data: TextInput):
     redacted_text = re.sub(dob_pattern, "[DOB: REDACTED]", input_data.text)
     #redacted_text = re.sub(name_pattern, "[REDACTED_name]", input_data.text)
     redact_all = len(input_data.redact_entities) == 0
-    
-    
+    dob= re.findall(dob_pattern, input_data.text)
+    gen=[]
+    acc=[]
+    age_no=[]
     for match_id, start, end in matches:
         match_id_str = nlp.vocab.strings[match_id]  
         span = doc[start:end]  
@@ -120,7 +132,13 @@ async def extract_and_redact(input_data: TextInput):
                 redacted_text = redacted_text.replace(span.text, new_value)
         
         extracted_entities.append({"entity": match_id_str, "text": span.text})
-    #person
+        if match_id_str=="gender":
+            gen.append(span.text)
+        if match_id_str=="ACCOUNT_NUMBER":
+            acc.append(span.text)
+        if match_id_str=="AGE":
+            age_no.append(span.text)
+    
     person=""
     for i in extracted_entities:
         if i['entity']=="PERSON":
@@ -133,6 +151,7 @@ async def extract_and_redact(input_data: TextInput):
     displacy.render(fol, style="span")
     names=[]
     phone=[]
+    
     for ent in fol.ents:
         if ent.label_=="phone_number":
             redacted_text = (redacted_text.lower()).replace((ent.text).lower(), "[phone]")
@@ -148,10 +167,16 @@ async def extract_and_redact(input_data: TextInput):
         if i.lower() in names[0].split():
              redacted_text = (redacted_text.lower()).replace((i).lower(), "[person]")
     extracted_entities.append({"entity": "PERSON_3", "text": full_name})
-    
-    extracted_entities=json.dumps(extracted_entities)
+    pii_json["Name"].extend(full_name)
+    pii_json["Name1"].extend(person)
+    pii_json["Name2"].extend(names)
+    pii_json["DOB"].extend(dob)
+    pii_json["Gender"].extend(gen)
+    pii_json["MRN"].extend(acc)
+    pii_json["Phone number"].extend(phone)
+    pii_json["Age"].extend(age_no)
     return {
         #"original_text": input_data.text,
         #"redacted_text": redacted_text,
-        "extracted_entities": extracted_entities
+        "extracted_entities": pii_json
     }
