@@ -120,7 +120,7 @@ async def extract_and_redact(input_data: TextInput):
                 redacted_text = redacted_text.replace(span.text, new_value)
         
         extracted_entities.append({"entity": match_id_str, "text": span.text})
-    
+    #person
     person=""
     for i in extracted_entities:
         if i['entity']=="PERSON":
