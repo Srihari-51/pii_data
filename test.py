@@ -139,7 +139,7 @@ async def extract_and_redact(input_data: TextInput):
         if match_id_str=="AGE":
             age_no.append(span.text)
     
-   person=[]
+    person=[]
     for i in extracted_entities:
         p=""
         if i['entity']=="PERSON":
