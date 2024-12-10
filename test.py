@@ -139,10 +139,14 @@ async def extract_and_redact(input_data: TextInput):
         if match_id_str=="AGE":
             age_no.append(span.text)
     
-    person=""
+   person=[]
     for i in extracted_entities:
+        p=""
         if i['entity']=="PERSON":
-            person=(i['text']).strip()
+            p+=(i['text']).strip()
+        person.append(p)
+        p=""
+        
     redacted_text = (redacted_text.lower()).replace((person.lower()).strip(), "[PERSON]")
     
     extracted_entities.append({"entity": "PERSON_1", "text": person})
