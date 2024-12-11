@@ -187,7 +187,7 @@ async def extract_and_redact(input_data: TextInput):
     if len(pat[0])==0:
         data_Patient=""
 
-    if len(dob[0])==0:
+    if len(dob)==0:
         data_Dob=""
 
     male=False
