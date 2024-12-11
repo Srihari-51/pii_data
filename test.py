@@ -216,6 +216,8 @@ async def extract_and_redact(input_data: TextInput):
         data_Gen="male"
     if Female:
         data_Gen="female"
+    if male==False and Female==False:
+        data_Gen=""
     acc_1=[]
     if len(acc)>0:
         for i in acc:
