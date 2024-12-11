@@ -212,7 +212,7 @@ async def extract_and_redact(input_data: TextInput):
     
     #pii_json["Name2"].extend(names)
     data_Dob=dob
-    pii_json["DOB"]=data_Dob
+    pii_json["DOB"]=dob
     if male:
         data_Gen="male"
     if Female:
