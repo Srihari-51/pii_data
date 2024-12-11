@@ -68,6 +68,8 @@ account_number_mrn = [
     {"IS_DIGIT": True, "OP": "+"}  
 ]
 name_pattern = [
+    {"LOWER": "Patient"}, 
+    {"IS_PUNCT": True, "OP": "?"},
     {"IS_TITLE": True},    
     {"TEXT": ","},        
     {"IS_TITLE": True},   
@@ -244,7 +246,8 @@ async def extract_and_redact(input_data: TextInput):
 
     if len(age_1)==0:
         data_age=""
-    pii_json["Patient_name"]=names_gliner
+    data_Patient=names_gliner
+    pii_json["Patient_name"]=data_Patient
     pii_json["Gender"]=data_Gen
     pii_json["MRN"]=data_Mrn
     pii_json["Phone_number"]=data_Phone
