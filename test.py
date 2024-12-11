@@ -7,15 +7,21 @@ import re
 import json
 nlp = spacy.load("en_core_web_sm")
 app = FastAPI()
+data_Patient=""
+data_Phone=""
+data_Dob=""
+data_Mrn=""
+data_Gen=""
+data_age=""
 pii_json={
-    "Name":[],
-    "Name1":[],
-    "Name2":[],
-    "Phone number":[],
-    "DOB":[],
-    "MRN":[],
-    "Gender":[],
-    "Age":[]
+    #"Name":[],
+    "Patient_name":data_Patient,
+    #"Name2":[],
+    "Phone_number":data_Phone,
+    "DOB":data_Dob,
+    "MRN":data_Mrn,
+    "Gender":data_Gen,
+    "Age":data_age
 }
 custom_spacy_config = { "gliner_model": "knowledgator/gliner-multitask-large-v0.5",
                             "chunk_size": 250,
@@ -65,11 +71,10 @@ name_pattern = [
     {"IS_TITLE": True},    
     {"TEXT": ","},        
     {"IS_TITLE": True},   
-    {"IS_TITLE": True, "OP": "?"} 
 ]
 
 age_patterns = [
-    [{"LOWER": "age"}, {"TEXT": ":"}, {"IS_DIGIT": True}, {"LOWER": {"IN": ["y", "years"]}},],
+    [{"TEXT": "age"}, {"TEXT": ":"}, {"IS_DIGIT": True}, {"LOWER": {"IN": ["y", "years"]}},],
     [{"IS_DIGIT": True}, {"LOWER": {"IN": ["y/o", "yo"]}}],
     [{"IS_DIGIT": True}, {"TEXT": "y"}],
     [{"TEXT": "("}, {"IS_DIGIT": True}, {"LOWER": "yo"}, {"TEXT": ")"}],
@@ -113,10 +118,10 @@ async def extract_and_redact(input_data: TextInput):
     doc = nlp(input_data.text)
     matches = matcher(doc)
     extracted_entities = []
-    redacted_text = input_data.text 
-    redacted_text = re.sub(dob_pattern, "[DOB: REDACTED]", input_data.text)
+    text = input_data.text 
+    #redacted_text = re.sub(dob_pattern, "[DOB: REDACTED]", input_data.text)
     #redacted_text = re.sub(name_pattern, "[REDACTED_name]", input_data.text)
-    redact_all = len(input_data.redact_entities) == 0
+    #redact_all = len(input_data.redact_entities) == 0
     dob= re.findall(dob_pattern, input_data.text)
     gen=[]
     acc=[]
@@ -124,12 +129,12 @@ async def extract_and_redact(input_data: TextInput):
     for match_id, start, end in matches:
         match_id_str = nlp.vocab.strings[match_id]  
         span = doc[start:end]  
-        if redact_all or match_id_str in input_data.redact_entities:
-            operator = operators.get(match_id_str)
-            if operator and operator.action == "replace":
-                new_value = operator.parameters["new_value"]
+        #if match_id_str in input_data.redact_entities:
+          #  operator = operators.get(match_id_str)
+            #if operator and operator.action == "replace":
+               # new_value = operator.parameters["new_value"]
                 
-                redacted_text = redacted_text.replace(span.text, new_value)
+             #   #redacted_text = redacted_text.replace(span.text, new_value)
         
         extracted_entities.append({"entity": match_id_str, "text": span.text})
         if match_id_str=="gender":
@@ -139,46 +144,104 @@ async def extract_and_redact(input_data: TextInput):
         if match_id_str=="AGE":
             age_no.append(span.text)
     
-    person=[]
+    persons=[]
     for i in extracted_entities:
-        p=""
+        person=""
         if i['entity']=="PERSON":
-            p+=(i['text']).strip()
-        person.append(p)
-        p=""
-        
-    redacted_text = (redacted_text.lower()).replace((person.lower()).strip(), "[PERSON]")
+            person+=(i['text']).strip()
+        persons.append(person)
+
+    #redacted_text = (redacted_text.lower()).replace((persons[0].lower()).strip(), "[PERSON]")
+    print(person)
     
-    extracted_entities.append({"entity": "PERSON_1", "text": person})
+    extracted_entities.append({"entity": "PERSON_1", "text": persons[0]})
     from spacy import displacy
-    fol=nlp(redacted_text)
+    fol=nlp(text)
     displacy.render(fol, style="span")
-    names=[]
+    #names=[]
     phone=[]
     
     for ent in fol.ents:
         if ent.label_=="phone_number":
-            redacted_text = (redacted_text.lower()).replace((ent.text).lower(), "[phone]")
+            #redacted_text = (redacted_text.lower()).replace((ent.text).lower(), "[phone]")
             phone.append(ent.text)
-        if ent.label_=="person":
-            names.append((ent.text).lower())
-    extracted_entities.append({"entity": "PERSON_2", "text": names})
+        #if ent.label_=="person":
+           # names.append((ent.text).lower())
+   # extracted_entities.append({"entity": "PERSON_2", "text": names})
     extracted_entities.append({"entity": "Phone_numbers", "text": phone})
     #print(names)
-    #print(redacted_text.split())
-    full_name=[]
-    for i in redacted_text.split():
-        if i.lower() in names[0].split():
-             redacted_text = (redacted_text.lower()).replace((i).lower(), "[person]")
-    extracted_entities.append({"entity": "PERSON_3", "text": full_name})
-    pii_json["Name"].extend(full_name)
-    pii_json["Name1"].extend(person)
-    pii_json["Name2"].extend(names)
-    pii_json["DOB"].extend(dob)
-    pii_json["Gender"].extend(gen)
-    pii_json["MRN"].extend(acc)
-    pii_json["Phone number"].extend(phone)
-    pii_json["Age"].extend(age_no)
+    #if len(names)>1:
+       # nam=
+    #full_name=[]
+    #for i in text.split():
+     #   if i.lower() in names[0].split():
+            # redacted_text = (redacted_text.lower()).replace((i).lower(), "[person]")
+    #extracted_entities.append({"entity": "PERSON_3", "text": full_name})
+    #pii_json["Name"].extend(full_name)
+    pat=[]
+    for i in persons:
+        if i!="":
+            pat.append(i)
+    if len(pat[0])!=0:
+        data_Patient=pat[0]
+    if len(pat[0])==0:
+        data_Patient=""
+    if len(dob[0])!=0:
+        data_Dob=dob[0]
+    if len(dob[0])==0:
+        data_Dob=""
+
+    male=False
+    Female=False
+    for i in gen:
+        if len(i)>1:
+            for j in i:
+                if i.isalpha():
+                    if i in ["m","M","Male","male"]:
+                        male=True
+                    if i in ["f","F","Female","female"]:
+                        Female=True
+        else:
+            if i.lower() in ["m","male"]:
+                male=True
+            else:
+                Female=True
+    if len(phone)>1:
+        data_Phone=phone[0]
+    data_Phone=phone[0]
+    
+    #pii_json["Name2"].extend(names)
+    pii_json["DOB"]=data_Dob
+    if male:
+        data_Gen="male"
+    if Female:
+        data_Gen="female"
+    acc_1=[]
+    if len(acc)>0:
+        for i in acc:
+            for j in i.split():
+                j=(j.lower()).strip()
+                if j!="acc" or j!="account" or j!="no" or j!="no." or j!="."or j!=":":
+                    if j.isnumeric():
+                        acc_1.append(j)
+    if len(acc_1)>=1:
+        data_Mrn=acc_1[0]
+    if len(acc_1)<=1:
+        data_Mrn=acc_1[0]
+    age_1=[]
+    for i in age_no:
+        for j in i.split():
+            if j.isnumeric():
+                age_1.append(j)
+    if len(age_1)>1:
+        data_age=age_1[0]
+    if len(age_1)<=1:
+        data_age=age_1[0]
+    pii_json["Patient_name"]=(data_Patient)
+    pii_json["Gender"]=data_Gen
+    pii_json["MRN"]=data_Mrn
+    pii_json["Phone_number"]=data_Phone
+    pii_json["Age"]=data_age
     return {
         #"original_text": input_data.text,
         #"redacted_text": redacted_text,
