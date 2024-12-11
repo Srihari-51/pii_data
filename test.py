@@ -181,14 +181,14 @@ async def extract_and_redact(input_data: TextInput):
             # redacted_text = (redacted_text.lower()).replace((i).lower(), "[person]")
     #extracted_entities.append({"entity": "PERSON_3", "text": full_name})
     #pii_json["Name"].extend(full_name)
-    pat=[]
-    for i in persons:
-        if i!="":
-            pat.append(i)
-    if len(pat[0])!=0:
-        data_Patient=pat[0]
-    if len(pat[0])==0:
-        data_Patient=""
+    #pat=[]
+    #for i in persons:
+     #   if i!="":
+      #      pat.append(i)
+    #if len(pat[0])!=0:
+     #   data_Patient=pat[0]
+    #if len(pat[0])==0:
+     #   data_Patient=""
     #if len(dob)!=0:
        # data_Dob=dob[0]
     #if len(dob)==0:
