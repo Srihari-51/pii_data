@@ -211,6 +211,7 @@ async def extract_and_redact(input_data: TextInput):
     data_Phone=phone[0]
     
     #pii_json["Name2"].extend(names)
+    data_Dob=dob
     pii_json["DOB"]=data_Dob
     if male:
         data_Gen="male"
