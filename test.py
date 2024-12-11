@@ -25,7 +25,7 @@ pii_json={
 }
 custom_spacy_config = { "gliner_model": "knowledgator/gliner-multitask-large-v0.5",
                             "chunk_size": 250,
-                            "labels": ["sex","gender","person","phone_number"],
+                            "labels": ["sex","gender","person","phone_number,DOB"],
                             "style": "ent",
                             "threshold":0.3}
 nlp.add_pipe("gliner_spacy",config=custom_spacy_config)
@@ -143,6 +143,7 @@ async def extract_and_redact(input_data: TextInput):
             acc.append(span.text)
         if match_id_str=="AGE":
             age_no.append(span.text)
+        
     
     persons=[]
     for i in extracted_entities:
@@ -158,16 +159,16 @@ async def extract_and_redact(input_data: TextInput):
     from spacy import displacy
     fol=nlp(text)
     displacy.render(fol, style="span")
-    #names=[]
+    names_gliner=[]
     phone=[]
     
     for ent in fol.ents:
         if ent.label_=="phone_number":
             #redacted_text = (redacted_text.lower()).replace((ent.text).lower(), "[phone]")
             phone.append(ent.text)
-        #if ent.label_=="person":
-           # names.append((ent.text).lower())
-   # extracted_entities.append({"entity": "PERSON_2", "text": names})
+        if ent.label_=="person":
+            names_gliner.append((ent.text).lower())
+    extracted_entities.append({"entity": "PERSON_2", "text": names_gliner})
     extracted_entities.append({"entity": "Phone_numbers", "text": phone})
     #print(names)
     #if len(names)>1:
@@ -243,7 +244,7 @@ async def extract_and_redact(input_data: TextInput):
 
     if len(age_1)==0:
         data_age=""
-    pii_json["Patient_name"]=(data_Patient)
+    pii_json["Patient_name"]=names_gliner
     pii_json["Gender"]=data_Gen
     pii_json["MRN"]=data_Mrn
     pii_json["Phone_number"]=data_Phone
