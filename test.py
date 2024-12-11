@@ -4,7 +4,7 @@ import spacy
 from spacy.matcher import Matcher
 from typing import List, Optional
 import re
-import json
+#import json
 nlp = spacy.load("en_core_web_sm")
 app = FastAPI()
 data_Patient=""
@@ -186,8 +186,7 @@ async def extract_and_redact(input_data: TextInput):
         data_Patient=pat[0]
     if len(pat[0])==0:
         data_Patient=""
-    if len(dob[0])!=0:
-        data_Dob=dob[0]
+
     if len(dob[0])==0:
         data_Dob=""
 
