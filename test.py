@@ -35,19 +35,19 @@ class OperatorConfig:
         self.action = action
         self.parameters = parameters
 
-operators = {
-    "date_of_birth": OperatorConfig("replace", {"new_value": "[REDACTED DATE]"}),
-    "PERSON": OperatorConfig("replace", {"new_value": "[REDACTED PERSON]"}),
-    "ACCOUNT_NUMBER": OperatorConfig("replace", {"new_value": "[REDACTED ACCOUNT]"}),
-    "MRN_NUMBER": OperatorConfig("replace", {"new_value": "[REDACTED MRN]"}),
-    "AGE": OperatorConfig("replace", {"new_value": "[REDACTED AGE]"}),
-    "Account Number": OperatorConfig("replace", {"new_value": "[REDACTED Account]"}),
-    "gender": OperatorConfig("replace", {"new_value": "[REDACTED GENDER]"})
-}
+#operators = {
+ #   "date_of_birth": OperatorConfig("replace", {"new_value": "[REDACTED DATE]"}),
+  #  "PERSON": OperatorConfig("replace", {"new_value": "[REDACTED PERSON]"}),
+   # "ACCOUNT_NUMBER": OperatorConfig("replace", {"new_value": "[REDACTED ACCOUNT]"}),
+    #"MRN_NUMBER": OperatorConfig("replace", {"new_value": "[REDACTED MRN]"}),
+    #"AGE": OperatorConfig("replace", {"new_value": "[REDACTED AGE]"}),
+    #"Account Number": OperatorConfig("replace", {"new_value": "[REDACTED Account]"}),
+    #"gender": OperatorConfig("replace", {"new_value": "[REDACTED GENDER]"})
+#}
 
 class TextInput(BaseModel):
     text: str
-    redact_entities: Optional[List[str]] = Query([], alias="redact", title="Entities to Redact")
+   # redact_entities: Optional[List[str]] = Query([], alias="redact", title="Entities to Redact")
 
 account_number = [
     {"LOWER": "acc"},
@@ -68,7 +68,7 @@ account_number_mrn = [
     {"IS_DIGIT": True, "OP": "+"}  
 ]
 name_pattern = [
-    {"LOWER": "Patient"}, 
+    {"TEXT": "Patient"}, 
     {"IS_PUNCT": True, "OP": "?"},
     {"IS_TITLE": True},    
     {"TEXT": ","},        
@@ -128,6 +128,7 @@ async def extract_and_redact(input_data: TextInput):
     gen=[]
     acc=[]
     age_no=[]
+    persons=[]
     for match_id, start, end in matches:
         match_id_str = nlp.vocab.strings[match_id]  
         span = doc[start:end]  
@@ -145,17 +146,11 @@ async def extract_and_redact(input_data: TextInput):
             acc.append(span.text)
         if match_id_str=="AGE":
             age_no.append(span.text)
-        
-    
-    persons=[]
-    for i in extracted_entities:
-        person=""
-        if i['entity']=="PERSON":
-            person+=(i['text']).strip()
-        persons.append(person)
+        if match_id_str=="PERSOn":
+            persons.append(span.text)
 
     #redacted_text = (redacted_text.lower()).replace((persons[0].lower()).strip(), "[PERSON]")
-    print(person)
+    #print(persons)
     
     extracted_entities.append({"entity": "PERSON_1", "text": persons[0]})
     from spacy import displacy
@@ -170,8 +165,8 @@ async def extract_and_redact(input_data: TextInput):
             phone.append(ent.text)
         if ent.label_=="person":
             names_gliner.append((ent.text).lower())
-    extracted_entities.append({"entity": "PERSON_2", "text": names_gliner})
-    extracted_entities.append({"entity": "Phone_numbers", "text": phone})
+    #extracted_entities.append({"entity": "PERSON_2", "text": names_gliner})
+    #extracted_entities.append({"entity": "Phone_numbers", "text": phone})
     #print(names)
     #if len(names)>1:
        # nam=
@@ -214,7 +209,7 @@ async def extract_and_redact(input_data: TextInput):
     data_Phone=phone[0]
     
     #pii_json["Name2"].extend(names)
-    data_Dob=dob
+    #data_Dob=dob
     pii_json["DOB"]=dob
     if male:
         data_Gen="male"
