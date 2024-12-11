@@ -239,6 +239,9 @@ async def extract_and_redact(input_data: TextInput):
         data_age=age_1[0]
     if len(age_1)<=1:
         data_age=age_1[0]
+
+    if len(age_1)==0:
+        data_age=""
     pii_json["Patient_name"]=(data_Patient)
     pii_json["Gender"]=data_Gen
     pii_json["MRN"]=data_Mrn
