@@ -29,7 +29,7 @@ pii_json = {
 custom_spacy_config = {
     "gliner_model": "knowledgator/gliner-multitask-large-v0.5",
     "chunk_size": 250,
-    "labels": ["sex", "gender", "person", "phone_number", "dob","age"],
+    "labels": ["sex", "gender", "person", "phone_number", "dob","age",""],
     "style": "ent",
     "threshold": 0.3
 }
@@ -59,8 +59,14 @@ account_number_mrn = [
     {"IS_PUNCT": True, "OP": "?"},  
     {"IS_DIGIT": True, "OP": "+"}  
 ]
+name_pattern = [
+    {"IS_UPPER": True, "IS_ALPHA": True},  # First part (Last Name)
+    {"TEXT": ","},                         # Separator (comma)
+    {"IS_TITLE": True, "IS_ALPHA": True},  # Second part (First Name)
+    {"IS_TITLE": True, "IS_ALPHA": True}   # Optional initial (e.g., J in Thomas J)
+]
 matcher.add("MRN_NUMBER", [account_number_mrn,account_number_1,account_number])
-
+matcher.add("Name", [name_pattern])
 @app.post("/extract_and_redact/")
 async def extract_and_redact(input_data: TextInput):
     doc = nlp(input_data.text)
@@ -87,6 +93,7 @@ async def extract_and_redact(input_data: TextInput):
             age_no.append(ent.text)
    
     mrn=[]
+    name_sp=[]
     for match_id, start, end in matches:
         match_id_str = nlp.vocab.strings[match_id]
         span = doc[start:end]
@@ -94,6 +101,10 @@ async def extract_and_redact(input_data: TextInput):
             match = re.findall(r'\d+', span.text)  
             if match:
                 mrn.append(match[0]) 
+    patient_names = []
+    for match_id, start, end in matches:
+        span = doc[start:end]  
+        patient_names.append(span.text)
     dob_pattern = r"(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{4})|(\d{4}[-/]\d{1,2}[-/]\d{1,2})"
     dob_matches = re.findall(dob_pattern, input_data.text)
     
@@ -104,8 +115,8 @@ async def extract_and_redact(input_data: TextInput):
         data_Dob = dob[0]
     else:
         data_Dob = ""
-    
-    pii_json["Patient_name"] = names_gliner if names_gliner else ""
+    nam_lis=names_gliner+name_sp
+    pii_json["Patient_name"] = patient_names[0] #names_gliner if names_gliner else ""
     pii_json["Phone_number"] = phone_numbers[0] if len(phone_numbers) > 0 else ""
     pii_json["DOB"] = data_Dob
     pii_json["Gender"] = gen[0] if len(gen) > 0 else ""
