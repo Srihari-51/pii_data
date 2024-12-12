@@ -93,7 +93,6 @@ async def extract_and_redact(input_data: TextInput):
             age_no.append(ent.text)
    
     mrn=[]
-    name_sp=[]
     for match_id, start, end in matches:
         match_id_str = nlp.vocab.strings[match_id]
         span = doc[start:end]
@@ -116,10 +115,9 @@ async def extract_and_redact(input_data: TextInput):
     else:
         data_Dob = ""
     nam_lis=patient_names+names_gliner
-    
-    pii_json["Patient_name"] = num_lis[0]
+    pii_json["Patient_name"] =  nam_lis[0] if nam_lis else ""
     pii_json["Phone_number"] = phone_numbers[0] if len(phone_numbers) > 0 else ""
-    pii_json["DOB"] = data_Dob
+    pii_json["DOB"] = data_Dob 
     pii_json["Gender"] = gen[0] if len(gen) > 0 else ""
     pii_json["Age"] = age_no[0] if len(age_no) > 0 else ""
     pii_json["MRN"] = mrn[0] if len(mrn) > 0 else ""
