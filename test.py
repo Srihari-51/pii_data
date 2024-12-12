@@ -115,9 +115,9 @@ async def extract_and_redact(input_data: TextInput):
         data_Dob = dob[0]
     else:
         data_Dob = ""
-    nam_lis=patiet_names+names_gliner
+    nam_lis=patient_names+names_gliner
     
-    pii_json["Patient_name"] = num_lis
+    pii_json["Patient_name"] = num_lis[0]
     pii_json["Phone_number"] = phone_numbers[0] if len(phone_numbers) > 0 else ""
     pii_json["DOB"] = data_Dob
     pii_json["Gender"] = gen[0] if len(gen) > 0 else ""
