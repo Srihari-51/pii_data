@@ -69,7 +69,11 @@ matcher.add("MRN_NUMBER", [account_number_mrn,account_number_1,account_number])
 matcher.add("Name", [name_pattern])
 @app.post("/extract_and_redact/")
 async def extract_and_redact(input_data: TextInput):
+
     doc = nlp(input_data.text)
+    texts=input_data.text
+    if len(texts)>700:
+        return "Reduse the Word Count below 700"
     matches = matcher(doc)
     extracted_entities = []
     names_gliner = []
