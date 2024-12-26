@@ -27,7 +27,7 @@ pii_json = {
 
 # Custom SpaCy config for Gliner model
 custom_spacy_config = {
-    "gliner_model": "answerdotai/ModernBERT-large",
+    "gliner_model": "knowledgator/ModernBERT-large",
     "chunk_size": 250,
     "labels": ["sex", "gender", "person", "phone_number", "dob","age",""],
     "style": "ent",
